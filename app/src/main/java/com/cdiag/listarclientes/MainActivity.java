@@ -58,4 +58,12 @@ public class MainActivity extends AppCompatActivity {
 
         startActivity(intent);
     }
+
+    public void eliminarClientes(View view)
+    {
+        Intent intent2 = new Intent(
+                MainActivity.this, EliminarCliente.class);
+
+        startActivity(intent2);
+    }
 }

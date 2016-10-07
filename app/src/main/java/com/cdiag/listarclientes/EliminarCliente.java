@@ -3,12 +3,8 @@ package com.cdiag.listarclientes;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,23 +17,24 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 
-//import org.apache.http.StringEntity;
 
-public class Sesion extends AppCompatActivity {
-    private TextView musuarioView;
-    private EditText mPasswordView;
+/**
+ * Created by caagu01 on 05/10/2016.
+ */
+public class EliminarCliente extends AppCompatActivity{
+
+    private TextView idEliminarView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.sesion_main);
+        setContentView(R.layout.eliminar_cliente);
         // Set up the login form.
-        musuarioView = (TextView) findViewById(R.id.usuario_lo);
+        idEliminarView = (TextView) findViewById(R.id.ideliminar);
 
 
-        mPasswordView = (EditText) findViewById(R.id.password);
-
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+       /* mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == R.id.button || id == EditorInfo.IME_NULL) {
@@ -47,41 +44,37 @@ public class Sesion extends AppCompatActivity {
                 return false;
             }
         });
+        */
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.button);
+        Button mEmailSignInButton = (Button) findViewById(R.id.btnEliminar);
         mEmailSignInButton.setOnClickListener(new View.OnClickListener() {
+
+
             @Override
             public void onClick(View view) {
-                validarInicioSesion();
+                eliminarCli();
             }
         });
-
     }
 
-    private void validarInicioSesion() {
+        private void eliminarCli() {
         // Reset errors.
-        musuarioView.setError(null);
-        mPasswordView.setError(null);
+        idEliminarView.setError("Id Invalido");
+
 
         // Store values at the time of the login attempt.
-        String email = musuarioView.getText().toString();
-        String password = mPasswordView.getText().toString();
+        int idcli = Integer.parseInt(idEliminarView.getText().toString());
+
 
         boolean cancel = false;
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (TextUtils.isEmpty(password) ) {
-            mPasswordView.setError("La contraseña es muy corta.");
-            focusView = mPasswordView;
+        if (idcli==0)  {
+            idEliminarView.setError("Cliente No encontrado.");
+            focusView = idEliminarView;
             cancel = true;
         }
-        if (TextUtils.isEmpty(email)) {
-            musuarioView.setError("Campo Requerido!!!");
-            focusView = musuarioView;
-            cancel = true;
-        }
-
         if (cancel) {
             focusView.requestFocus();
 
@@ -90,14 +83,15 @@ public class Sesion extends AppCompatActivity {
             // perform the user login attempt.
             try {
                 JSONObject jsonParams = new JSONObject();
-                jsonParams.put("usuario", musuarioView.getText().toString());
-                jsonParams.put("contrasena", mPasswordView.getText().toString());
+                //Integer.parseInt(idEliminarView.getText().toString());
+                jsonParams.put("idCliEli", Integer.parseInt(idEliminarView.getText().toString()));
+                //jsonParams.put("contrasena", mPasswordView.getText().toString());
                 StringEntity entity = new StringEntity(jsonParams.toString());
 
                 invokeWS(entity);
             }catch (JSONException e){
                 System.out.println("e = " + e);
-                
+
             }catch (UnsupportedEncodingException w){
 
                 System.out.println("w = " + w);
@@ -111,51 +105,29 @@ public class Sesion extends AppCompatActivity {
         AsyncHttpClient client = new AsyncHttpClient();
         //client.addHeader("Accept"," application/json");
         //client.addHeader("content-type"," application/json");
-        client.post(getApplicationContext(), "http://10.0.2.2:48176/cdiag/webresources/autenticacion",params ,"application/json",
+        int cedu = Integer.parseInt(idEliminarView.getText().toString());
+        client.delete(getApplicationContext(), "http://10.0.2.2:48176/cdiag/webresources/cdiag.entidades.cliente/" + cedu,
                 new AsyncHttpResponseHandler() {
 
 
                     // When the response returned by REST has Http response code '200'
                     @Override
                     public void onSuccess(String response) {
-                        // Hide Progress Dialog
+                        // Hide Progress Dialogca
                         try {
                             // JSON Object
                             if(response !=null) {
                                 JSONObject arreglo = new JSONObject(response);
+                               // Cliente cliente = new Cliente();
 
-                                int codigo=arreglo.getInt("codigo");
+                                //cliente.setCedCli(arreglo.get("cedCli"));
+                                //usuario.setPassword(arreglo.getString("login"));
 
-                                switch (codigo){
-                                    case 1:
-                                    case 3:
-
-                                        Toast.makeText(getApplicationContext(),
-                                                arreglo.getString("mensaje"), Toast.LENGTH_LONG).show();
-
-                                        break;
-                                    case 2:
-                                       // UsuarioDto usuario = new UsuarioDto();
-                                        //usuario.setLogin(arreglo.getString("nombreCompleto"));
-                                        //usuario.setPassword(arreglo.getString("login"));
-
-                                        JSONObject usu= arreglo.getJSONObject("usuario");
-
-
-
-                                        vista_Registro();
-                                        Toast.makeText(getApplicationContext(),
-                                                arreglo.getString("mensaje")+" "+ usu.getString("nombreCompleto"),
-                                                Toast.LENGTH_LONG).show();
-
-                                        break;
-
-
-                                }
-
+                                vista_Registro();
+                                Toast.makeText(getApplicationContext(), "Usuario Eliminado  " , Toast.LENGTH_LONG).show();
                             }else {
 
-                                Toast.makeText(getApplicationContext(),"Accesos Incorrectos", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(),"Usuario No Eliminado", Toast.LENGTH_LONG).show();
                             }
 
                         } catch (JSONException e) {
@@ -190,22 +162,18 @@ public class Sesion extends AppCompatActivity {
     }
 
 
-    private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() > 4;
-    }
-
-
     public void vista_Registro() {
         Intent i = new Intent(this, MainActivity.class );
         startActivity(i);
     }
-
+/*
     public  void  iniciarSesion(View view){
         Intent intent = new Intent();
-        intent.setClass(Sesion.this, ListarClientes.class);
+        intent.setClass(EliminarCliente.this, ListarClientes.class);
         startActivity(intent);
 
     }
-}
+    */
 
+
+}
